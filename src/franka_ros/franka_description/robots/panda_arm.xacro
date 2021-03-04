@@ -341,5 +341,115 @@
       <parent link="${arm_id}_link7"/>
       <child link="${arm_id}_link8"/>
     </joint>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  
+    <!-- START ADDED -->
+    <link name="camera_frame"/>
+    <link name="camera_rgb_optical_frame">
+      <inertial>
+          <mass value="0.1"/>
+          <inertia ixx="100"  ixy="0"  ixz="0" iyy="100" iyz="0" izz="100" />
+        </inertial>
+        <collision name="collision">
+          <geometry>
+            <box size="0.073000 0.276000 0.072000"/>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <mesh filename="package://leo_description/urdf/kinect/meshes/kinect.dae"/>
+          </geometry>
+        </visual>
+    </link>
+
+   <joint name="camera_joint" type="fixed">
+      <origin xyz="0.0971 0 -0.0427" rpy="0 0.2094 0"/>
+      <parent link="panda_link8"/>
+      <child link="camera_frame"/>
+   </joint>
+   <joint name="camera_optical_joint" type="fixed">
+      <origin xyz="0 0 0" rpy="-${pi/2} 0.0 -${pi/2}"/>
+      <parent link="camera_frame"/>
+      <child link="camera_rgb_optical_frame"/>
+   </joint>
+
+    <!-- camera -->
+    <gazebo reference="camera_frame">
+
+      <sensor name="camera" type="depth">
+        <always_on>true</always_on>
+        <update_rate>30.0</update_rate>
+        <visualize>true</visualize> 
+        <update_rate>20</update_rate>
+        <camera name="leo_camera">
+          <horizontal_fov>1.047198</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.05</near>
+            <far>3</far>
+          </clip>
+        </camera>
+
+        <plugin name="camera_controller" filename="libgazebo_ros_openni_kinect.so">
+          <!--<robotNamespace>${robot_ns}</robotNamespace>-->
+          <baseline>0.2</baseline>
+          <alwaysOn>true</alwaysOn>
+          <!-- Keep this zero, update_rate in the parent <sensor> tag
+            will control the frame rate. -->
+          <updateRate>0.0</updateRate>
+          <cameraName>camera_ir</cameraName>
+          <imageTopicName>/camera/color/image_raw</imageTopicName>
+          <cameraInfoTopicName>/camera/color/camera_info</cameraInfoTopicName>
+          <depthImageTopicName>/camera/depth/image_raw</depthImageTopicName>
+          <depthImageCameraInfoTopicName>/camera/depth/camera_info</depthImageCameraInfoTopicName>
+          <pointCloudTopicName>/camera/depth_registered/points</pointCloudTopicName>
+          <frameName>camera_rgb_optical_frame</frameName>
+          <pointCloudCutoff>0.5</pointCloudCutoff>
+          <pointCloudCutoffMax>3.0</pointCloudCutoffMax>
+          <distortionK1>0</distortionK1>
+          <distortionK2>0</distortionK2>
+          <distortionK3>0</distortionK3>
+          <distortionT1>0</distortionT1>
+          <distortionT2>0</distortionT2>
+          <CxPrime>0</CxPrime>
+          <Cx>0</Cx>
+          <Cy>0</Cy>
+          <focalLength>0</focalLength>
+          <hackBaseline>0</hackBaseline>
+        </plugin>
+
+      </sensor>
+    </gazebo>
+  <!-- END ADDED -->
+  
+      
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   </xacro:macro>
 </robot>
