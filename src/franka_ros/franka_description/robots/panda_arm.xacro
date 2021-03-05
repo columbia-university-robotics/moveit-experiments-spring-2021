@@ -380,7 +380,7 @@
       <child link="camera_frame"/>
    </joint>
    <joint name="camera_optical_joint" type="fixed">
-      <origin xyz="0 0 0" rpy="-${pi/2} 0.0 -${pi/2}"/>
+       <origin xyz="0 0 0" rpy="-${pi/2} 0.0 -${pi/2}"/><!-- <origin xyz="0.05 -.05 0" rpy="${pi} -${pi/2} -${pi/4}"/>    <origin xyz="0 0 0" rpy="-${pi/2} 0.0 -${pi/2}"/>-->
       <parent link="camera_frame"/>
       <child link="camera_rgb_optical_frame"/>
    </joint>

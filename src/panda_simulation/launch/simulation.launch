@@ -8,7 +8,7 @@
     <arg name="headless" default="false" />
     <arg name="debug" default="false" />
     <arg name="load_gripper" default="true" />
-
+  <arg name="use_gui" default="false" />
     <!--launch GAZEBO with own world configuration -->
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
         <!-- <arg name="world_name" value="$(find robotics_assisted_tomography)/worlds/tomography.world"/> -->
@@ -37,7 +37,9 @@
         <arg name="load_robot_description" value="true" />
         <arg name="load_gripper" value="$(arg load_gripper)" />
     </include>
-    
+
+  <!-- If needed, broadcast static tf for robot root -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="virtual_joint_broadcaster_1" args="0 0 0 0 0 0 world panda_link0" />    
     
   <arg name="planner" default="ompl" />
   <!-- Run the main MoveIt executable without trajectory execution (we do not have controllers configured by default) -->
@@ -51,14 +53,20 @@
     <group if="$(arg gui)">
         <include file="$(find panda_moveit_config)/launch/moveit_rviz.launch" />
     </group>
+    
+  <!-- We do not have a robot connected, so publish fake joint states -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="/use_gui" value="$(arg use_gui)"/>
+    <rosparam param="/source_list">[/move_group/fake_controller_joint_states]</rosparam>
+  </node>
 
     <node name="joint_state_desired_publisher" pkg="topic_tools" type="relay" args="joint_states joint_states_desired" />
 
     <!-- launch robot control node for moveit motion planning -->
     <node pkg="panda_simulation" type="robot_control_node" name="robot_control_node" output="screen" />
 
-    <!-- load (not start!) custom joint position controller -->
-    <node pkg="controller_manager" type="spawner" name="joint_position_launcher" args="--stopped joint_position_controller" />
+    <!-- load (not start!) custom joint position controller - -stopped -->
+    <node pkg="controller_manager" type="spawner" name="joint_position_launcher" args="joint_position_controller" />
 
     <!-- run custom node for automatic intialization -->
     <node pkg="panda_simulation" type="robot_state_initializer_node" name="robot_state_initializer_node" />
