@@ -19,6 +19,8 @@
         <arg name="headless" value="$(arg headless)" />
     </include>
 
+
+
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model panda" />
 
     <!-- Load joint controller configurations from YAML file to parameter server -->
@@ -78,4 +80,10 @@
 
     <node pkg="tf2_web_republisher" type="tf2_web_republisher" name="tf2_web_republisher" />
     END CHANGED -->
+    
+    <!-- launch our vehicle -->
+    <include file="$(find skid_steer_bot)/launch/skid_steer.launch"/>
+
+
+    
 </launch>
