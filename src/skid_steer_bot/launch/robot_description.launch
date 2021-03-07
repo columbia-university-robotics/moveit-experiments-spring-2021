@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<launch>
+  <group ns="skid_steer_bot1">
+        <!-- send urdf to param server -->
+        <param name="robot_description" command="$(find xacro)/xacro '$(find skid_steer_bot)/urdf/skid_steer_bot.xacro'" />
+
+        <!-- Send fake joint values -->
+        <node name="joint_state_publisher"  pkg="joint_state_publisher" type="joint_state_publisher">
+          <param name="use_gui" value="false"/>
+        </node>
+
+        <!-- Send robot states to tf -->
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen">
+          <!--remap from="robot_description" to="skid_steer_bot1_robot_description" /-->
+        </node>
+
+
+        <param name="hammer_description" command="$(find xacro)/xacro '$(find skid_steer_bot)/urdf/hammer.xacro'" />
+
+        <param name="shoe_description" command="$(find xacro)/xacro '$(find skid_steer_bot)/urdf/shoe.xacro'" />
+        
+
+
+  </group>
+   <arg name="ssb_x_val" default="0.600000"/>
+  <arg name="ssb_yaw_val" default="1.572000"/>
+  <arg name="ham_x_val" default="0.400000"/>
+  <arg name="ham_z_val" default="0.400000"/>
+  <arg name="shoe_x_val" default="0.700000"/>
+  <arg name="shoe_z_val" default="0.400000"/>
+
+
+  <!--spawn a robot in gazebo world-->
+  <node name="skid_steer_bot1_urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false"
+  output="screen" args="-urdf -param skid_steer_bot1/robot_description -model skid_steer_bot -x $(arg ssb_x_val) -Y $(arg ssb_yaw_val)"/>
+
+  <!--spawn a robot in gazebo world-->
+  <node name="hammer_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false"
+  output="screen" args="-urdf -param skid_steer_bot1/hammer_description -model hammer_object -x $(arg ham_x_val) -z $(arg ham_z_val)"/>
+
+  <!--spawn a robot in gazebo world-->
+  <node name="shoe_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false"
+  output="screen" args="-urdf -param skid_steer_bot1/shoe_description -model shoe_object -x $(arg shoe_x_val) -z $(arg shoe_z_val)"/>
+
+
+   
+  
+</launch>

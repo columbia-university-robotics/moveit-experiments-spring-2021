@@ -1,0 +1,66 @@
+<?xml version='1.0'?>
+
+<robot name="hammer_object" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Scale the robot size to fit the environment -->
+  <xacro:property name="scale" value="1.0" />
+  <xacro:property name="wheel_mass" value="${scale * 1}" />
+    <xacro:property name="wheel_inertia" value="${scale * 1e-3}" />
+  <!-- Length along X-axis, Width along Y-axis, Height along Z-axis -->
+  <xacro:property name="mower_width" value="${scale * 0.46}" />
+  <xacro:property name="mower_length" value="${scale * 0.46}" />
+  <xacro:property name="mower_height" value="${scale * 0.3}" />
+  <xacro:property name="mower_mass" value="${scale * 10}" />
+
+  <xacro:property name="wheel_kp" value="1000000.0" />
+  <xacro:property name="wheel_kd" value="100.0" />
+  <xacro:property name="wheel_mu1" value="1" />
+  <xacro:property name="wheel_mu2" value="1" />
+  <xacro:property name="wheel_slip1" value="0.5" />
+  <xacro:property name="wheel_slip2" value="0" />
+
+
+  <link name="hammer"></link><!-- root -->
+  <link name="hammer_link">
+    <inertial>
+      <mass value="${wheel_mass}"/>
+      <origin xyz="0.0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <inertia
+        ixx="${wheel_inertia}" ixy="0" ixz="0"
+        iyy="${wheel_inertia}" iyz="0"
+        izz="${wheel_inertia}" />
+    </inertial>
+    <collision name="left_front_wheel_collision">
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
+      <geometry>
+        <mesh filename="model://hammer/meshes/hammer.dae" scale="1 1 1"/>
+      </geometry>
+      <surface>
+        <friction>
+          <fdir1>1 0 0</fdir1>
+          <kp>${wheel_kp}</kp> <!-- kp and kd for rubber -->
+          <kd>${wheel_kd}</kd>
+          <mu>${wheel_mu1}</mu>
+          <mu2>${wheel_mu2}</mu2>
+          <slip1>${wheel_slip1}</slip1>
+          <slip2>${wheel_slip2}</slip2>
+        </friction>
+      </surface>
+    </collision>
+    <visual name="left_front_wheel_visual">
+      <origin xyz="0 0 0" rpy=" 0 0 1.5707"/><!-- " 0 1.5707 1.5707"-->
+      <geometry>
+        <mesh filename="model://hammer/meshes/hammer.dae" scale="1 1 1"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint type="fixed" name="hammer_joint">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <child link="hammer_link"/>
+    <parent link="hammer"/>
+    <axis xyz="0 1 0" rpy="0 0 0"/>
+    <limit effort="10000" velocity="1000"/>
+    <joint_properties damping="1.0" friction="1.0"/>
+  </joint>
+
+</robot>
