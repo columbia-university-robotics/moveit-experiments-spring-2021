@@ -10,7 +10,7 @@ A package where CURC members are experimenting with moveit.
 - [ ] TBD
 - [ ] TBD
 
-![showing depth perception connected to moveit](media/current_perception.png)
+![showing depth perception connected to moveit](media/showing_octomap_from_pc.gif)
 
 # BASIC USAGE
 catkin_make it, source it, and then run 
