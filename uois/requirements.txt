@@ -1,0 +1,8 @@
+cudatools
+torch==1.8.0
+torchvision
+opencv-python
+scikit-image
+pypng
+pillow
+jupyter
