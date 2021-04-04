@@ -20,8 +20,8 @@
     <arg name="debug" value="$(arg debug)"/>
   </include>
  -->
-  <!--launch rviz-->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find skid_steer_bot)/launch/Rvizconfig.rviz"/> 
+  <!--launch rviz
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find skid_steer_bot)/launch/Rvizconfig.rviz"/> -->
   <include file="$(find skid_steer_bot)/launch/move_base.launch"/>
 
 </launch>
