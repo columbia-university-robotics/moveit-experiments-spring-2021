@@ -19,10 +19,19 @@ import image_segment.segmentation as segmentation
 import image_segment.evaluation as evaluation
 import image_segment.utilities as util_
 import image_segment.flowlib as flowlib
+# ROS imports
 import rospy
+from sensor_msgs.msg import PointCloud2, Image 
+import ros_numpy
 
+CURRENTLY_UPDATING = False
+SAMPLE_INTERVAL = 20
+LAST_IMAGE_UPDATE = 0
+RGB_IMAGE = None
+DEPTH_IMAGE = None
+HAS_RUN_THROUGH_SEGMENTER = True # init to true
+def get_model_configs():
 
-def main():
     dsn_config = {
         
         # Sizes
@@ -67,7 +76,12 @@ def main():
         
     }
 
-    rospy.logerr(os.path.abspath('.'))
+    return dsn_config, rrn_config, uois3d_config
+
+def get_network():
+    dsn_config, rrn_config, uois3d_config = get_model_configs()
+    #rospy.logerr(os.path.abspath('.'))
+    #TODO CHANGE SO THAT EVERYONE CAN LOAD WITH RELATIVE PATH
     absolute_path = '/home/biobe/workspace/moveit-experiments-spring-2021/src/image_segment/'
     checkpoint_dir = absolute_path+'checkpoints/'#'/home/chrisxie/projects/uois/checkpoints/' # TODO: change this to directory of downloaded models
     dsn_filename = checkpoint_dir + 'DepthSeedingNetwork_3D_TOD_checkpoint.pt'
@@ -79,8 +93,12 @@ def main():
                                          rrn_filename,
                                          rrn_config
                                         )
-                                        
-                                        
+    return uois_net_3d
+
+
+def old_main():
+    uois_net_3d = get_network()
+    """                                    
     example_images_dir = absolute_path + 'example_images/'
 
     OSD_image_files = sorted(glob.glob(example_images_dir + '/OSD_*.npy'))
@@ -93,7 +111,7 @@ def main():
 
     for i, img_file in enumerate(OSD_image_files + OCID_image_files):
         d = np.load(img_file, allow_pickle=True, encoding='bytes').item()
-        rospy.logerr(str(d))
+        rospy.logerr(str(d.keys()))
         # RGB
         rgb_img = d['rgb']
         rgb_imgs[i] = data_augmentation.standardize_image(rgb_img)
@@ -125,19 +143,15 @@ def main():
     fg_masks = fg_masks.cpu().numpy()
     center_offsets = center_offsets.cpu().numpy().transpose(0,2,3,1)
     initial_masks = initial_masks.cpu().numpy()
-
-
-
-
-
-
-
-
-
-
+    
 
     rgb_imgs = util_.torch_to_numpy(batch['rgb'].cpu(), is_standardized_image=True)
     total_subplots = 6
+    """
+    
+    
+    
+    
     """
     fig_index = 1
     for i in range(N):
@@ -163,9 +177,131 @@ def main():
     """    
     rospy.logerr("Finished with pytorch_ros_tester_node")
         
+def pc_image_cb(im):
+    """
+    rostopic pub /camera/depth_registered/points sensor_msgs/PointCloud2 "header:
+      seq: 0
+      stamp: {secs: 0, nsecs: 0}
+      frame_id: ''
+    height: 0
+    width: 0
+    fields:
+    - {name: '', offset: 0, datatype: 0, count: 0}
+    is_bigendian: false
+    point_step: 0
+    row_step: 0
+    data: !!binary ""
+    is_dense: false"
+    """
+    global LAST_IMAGE_UPDATE, CURRENTLY_UPDATING, RGB_IMAGE, DEPTH_IMAGE, HAS_RUN_THROUGH_SEGMENTER
     
+    if enough_time_has_passed() and HAS_RUN_THROUGH_SEGMENTER:
+
+        CURRENTLY_UPDATING = True
+        LAST_IMAGE_UPDATE = rospy.get_time()
+        
+        
+        # https://github.com/eric-wieser/ros_numpy/blob/master/src/ros_numpy/point_cloud2.py
+        # get numpy array from msg
+        pc_void_array = ros_numpy.point_cloud2.pointcloud2_to_array(im)
+        temp_xyzrgb_array = ros_numpy.point_cloud2.split_rgb_field(pc_void_array)
+        xyz_array = ros_numpy.point_cloud2.get_xyz_points(temp_xyzrgb_array,remove_nans=False)
+
+        # reshape so that the ndtype is not made of void types
+        h,w = temp_xyzrgb_array['r'].shape 
+        assert((h,w) == (480,640))
+        assert(xyz_array.shape == (h,w,3))
+        rgb_array = np.zeros((h,w,3))
+        rgb_array[:,:,0] = temp_xyzrgb_array['r']
+        rgb_array[:,:,1] = temp_xyzrgb_array['g']
+        rgb_array[:,:,2] = temp_xyzrgb_array['b']   
+         
+        # update the latest image
+        RGB_IMAGE = rgb_array
+        DEPTH_IMAGE = xyz_array
+        CURRENTLY_UPDATING = False
+        HAS_RUN_THROUGH_SEGMENTER = False
+
+        
+def rgb_image_cb(im):
+    #rostopic pub /camera/color/image_raw sensor_msgs/Image "header:
+    #  seq: 0
+    #  stamp: {secs: 0, nsecs: 0}
+    #  frame_id: ''
+    #height: 0
+    #width: 0
+    #encoding: ''
+    #is_bigendian: 0
+    #step: 0
+    #data: !!binary 
+    
+    #rospy.logerr("rgb_image_cb : "+str(im.height)+str(im.width))# 480 , 640
+    numpy_rgb_image = ros_numpy.numpify(im)
+    
+def depth_image_cb(im):
+    #rostopic pub /camera/depth/image_raw sensor_msgs/Image "header:
+    #  seq: 0
+    #  stamp: {secs: 0, nsecs: 0}
+    #  frame_id: ''
+    #height: 0
+    #width: 0
+    #encoding: ''
+    #is_bigendian: 0
+    #step: 0
+    #data: !!binary 
+    #rospy.logerr("depth_image_cb : "+str(im.height)+str(im.width))# 480 , 640
+    numpy_depth_image = ros_numpy.numpify(im)
+    
+    
+    
+def enough_time_has_passed():
+    global LAST_IMAGE_UPDATE, CURRENTLY_UPDATING
+    return not CURRENTLY_UPDATING and rospy.get_time() - LAST_IMAGE_UPDATE > SAMPLE_INTERVAL 
+    
+     
+def main():
+    global LAST_IMAGE_UPDATE, CURRENTLY_UPDATING, RGB_IMAGE, DEPTH_IMAGE, HAS_RUN_THROUGH_SEGMENTER
+    uois_net_3d = get_network()
+    
+    rgb_imgs = np.zeros((1, 480, 640, 3), dtype=np.float32)
+    xyz_imgs = np.zeros((1, 480, 640, 3), dtype=np.float32)    
+    
+    r = rospy.Rate(10) # 10hz
+    
+    while not rospy.is_shutdown():
+        if enough_time_has_passed() :
+            st_time = time()
+            
+            rgb_imgs[0] = RGB_IMAGE
+            xyz_imgs[0] = DEPTH_IMAGE
+  
+            batch = {
+                'rgb' : data_augmentation.array_to_tensor(rgb_imgs),
+                'xyz' : data_augmentation.array_to_tensor(xyz_imgs),
+            }
+
+            ### Compute segmentation masks ###
+            fg_masks, center_offsets, initial_masks, seg_masks = uois_net_3d.run_on_batch(batch)
+
+            # Get results in numpy
+            seg_masks = seg_masks.cpu().numpy()
+            fg_masks = fg_masks.cpu().numpy()
+            center_offsets = center_offsets.cpu().numpy().transpose(0,2,3,1)
+            initial_masks = initial_masks.cpu().numpy()
+            rospy.logerr(str(fg_masks.shape)+str(center_offsets.shape)+str(initial_masks.shape)+str(seg_masks.shape))
+            total_time = time() - st_time 
+            rospy.logdebug("total_time : "+str(round(total_time, 3)))# 480 , 640
+            HAS_RUN_THROUGH_SEGMENTER = True
+            
+        r.sleep() 
+
 if __name__ == "__main__":
     rospy.init_node('pytorch_ros_tester_node', anonymous=True)
+    
+    rospy.Subscriber("/camera/depth_registered/points", PointCloud2, pc_image_cb)
+    rospy.Subscriber("/camera/depth/image_raw", Image, depth_image_cb)
+    rospy.Subscriber("/camera/color/image_raw", Image, rgb_image_cb)
+
     main()    
     rospy.spin()                                
     
