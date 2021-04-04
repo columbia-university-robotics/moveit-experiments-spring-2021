@@ -21,6 +21,7 @@ roslaunch panda_simulation simulation.launch
 # REQUIREMENTS
 ```
 sudo apt-get update
+sudo apt-get install ros-noetic-ros-numpy
 sudo apt-get install ros-noetic-move-base -y
 sudo apt-get install ros-noetic-map-server -y
 # NOT AVAILABLE # sudo apt-get install ros-noetic-eband-local-planner -y
