@@ -31,9 +31,9 @@
     <!-- base_local_planner/TrajectoryPlannerROS, eband_local_planner/EBandPlannerROS, teb_local_planner/TebLocalPlannerROS  -->
     <!-- sudo apt-get install ros-kinetic-eband-local-planner -->
     <!-- sudo apt-get install ros-kinetic-teb-local-planner -->
-    <!-- <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/> -->
-    <!-- <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" /> -->
-    <param name="base_local_planner" value="eband_local_planner/EBandPlannerROS"/>
+    <param name="base_local_planner" value="base_local_planner/TrajectoryPlannerROS"/> 
+    <!-- <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />-->
+    <!-- <param name="base_local_planner" value="eband_local_planner/EBandPlannerROS"/> -->
     <param name="controller_frequency" value="30.0" />
     <param name="planner_frequency" value="10.0" />
 
