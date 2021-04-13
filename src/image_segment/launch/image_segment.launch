@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<launch>
-  <node name="pytorch_ros_tester_node" pkg="image_segment" type="pytorch_ros_tester.py"/> 
-</launch>

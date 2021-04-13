@@ -47,11 +47,11 @@
   <xacro:property name="camerra_x_offset" value="${hardware_length/2.0 + base_x_offset - camerra_length/2.0 + 0.001}" />
   <xacro:property name="camerra_z_offset" value="${hardware_height - camerra_height/2.0 + 0.001}" />
 
-  <xacro:property name="platform_width" value="1" />
-  <xacro:property name="platform_length" value="1" />
-  <xacro:property name="platform_height" value="0.1" />
-  <xacro:property name="platform_x_offset" value="${base_x_offset}" />
-  <xacro:property name="platform_z_offset" value="${hardware_height + 0.025}" />
+  <xacro:property name="laser_width" value="0.1" />
+  <xacro:property name="laser_length" value="0.1" />
+  <xacro:property name="laser_height" value="0.1" />
+  <xacro:property name="laser_x_offset" value="${base_x_offset}" />
+  <xacro:property name="laser_z_offset" value="${hardware_height + 0.025}" />
 
   <xacro:property name="wheel_kp" value="1000000.0" />
   <xacro:property name="wheel_kd" value="100.0" />
@@ -160,9 +160,9 @@
       </surface>
     </collision>
     <visual name="left_back_wheel_visual">
-      <origin xyz="0 0 0" rpy=" 0 0 1.5707"/><!-- " 0 1.5707 1.5707"-->
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
       <geometry>
-        <mesh filename="package://skid_steer_bot/meshes/wheel_rig_3d.dae" scale=".1 .1 .1"/>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
       </geometry>
     </visual>
   </link>
@@ -204,9 +204,9 @@
       </surface>
     </collision>
     <visual name="right_back_wheel_visual">
-      <origin xyz="0 0 0" rpy=" 0 0 1.5707"/><!-- " 0 1.5707 1.5707"-->
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
       <geometry>
-        <mesh filename="package://skid_steer_bot/meshes/wheel_rig_3d.dae" scale=".1 .1 .1"/>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
       </geometry>
     </visual>
   </link>
@@ -248,9 +248,9 @@
       </surface>
     </collision>
     <visual name="left_front_wheel_visual">
-      <origin xyz="0 0 0" rpy=" 0 0 1.5707"/><!-- " 0 1.5707 1.5707"-->
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
       <geometry>
-        <mesh filename="package://skid_steer_bot/meshes/wheel_rig_3d.dae" scale=".1 .1 .1"/>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
       </geometry>
     </visual>
   </link>
@@ -292,15 +292,15 @@
       </surface>
     </collision>
     <visual name="right_front_wheel_visual">
-      <origin xyz="0 0 0" rpy=" 0 0 1.5707"/><!-- " 0 1.5707 1.5707"-->
+      <origin xyz="0 0 0" rpy=" 0 1.5707 1.5707"/>
       <geometry>
-        <mesh filename="package://skid_steer_bot/meshes/wheel_rig_3d.dae" scale=".1 .1 .1"/>
+        <cylinder length="${wheel_length}" radius="${wheel_radius}"/>
       </geometry>
     </visual>
   </link>
 
 
-  <link name='skid_steer_bot_camera'>
+  <link name='camera'>
     <inertial>
       <mass value="0.1"/>
       <origin xyz="0 0 0" rpy=" 0 0 0"/>
@@ -309,13 +309,13 @@
           iyy="1e-6" iyz="0"
           izz="1e-6"/>
     </inertial>
-    <collision name='skid_steer_bot_camera_collision'>
+    <collision name='camera_collision'>
       <origin xyz="0 0 0" rpy=" 0 0 0"/>
       <geometry>
         <box size="${camerra_length} ${camerra_width} ${camerra_height}"/>
       </geometry>
     </collision>
-    <visual name='skid_steer_bot_camera_visual'>
+    <visual name='camera_visual'>
       <origin xyz="0 0 0" rpy=" 0 0 0"/>
       <geometry>
         <box size="${camerra_length} ${camerra_width} ${camerra_height}"/>
@@ -323,9 +323,9 @@
     </visual>
   </link>
 
-  <joint type="fixed" name="skid_steer_bot_camera_joint">
+  <joint type="fixed" name="camera_joint">
     <origin xyz="${camerra_x_offset} 0 ${camerra_z_offset}" rpy="0 0 0"/>
-    <child link="skid_steer_bot_camera"/>
+    <child link="camera"/>
     <parent link="chassis"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>
     <limit effort="10000" velocity="1000"/>
@@ -333,7 +333,7 @@
   </joint>
 
 
-  <link name='platform'>
+  <link name='hokuyo'>
     <pose>0 0 0 0 0 0</pose>
     <inertial>
       <mass value="0.1"/>
@@ -343,31 +343,27 @@
           iyy="1e-6" iyz="0"
           izz="1e-6" />
     </inertial>
-    <collision name='platform_collision'>
+    <collision name='hokuyo_collision'>
       <origin xyz="0 0 0" rpy=" 0 0 0"/>
       <geometry>
-        <box size="${platform_length} ${platform_width} ${platform_height}"/>
+        <box size="${laser_length} ${laser_width} ${laser_height}"/>
       </geometry>
     </collision>
-    <visual name='platform_visual'>
+    <visual name='hokuyo_visual'>
       <origin xyz="0 0 0" rpy=" 0 0 0"/>
       <geometry>
-        <box size="${platform_length} ${platform_width} ${platform_height}"/>
+        <mesh filename="package://skid_steer_bot/meshes/hokuyo.dae"/>
       </geometry>
     </visual>
   </link>
 
-  <joint type="fixed" name="platform_joint">
-    <origin xyz="${platform_x_offset} 0 ${platform_z_offset}" rpy="0 0 0"/>
-    <child link="platform"/>
+  <joint type="fixed" name="hokuyo_joint">
+    <origin xyz="${laser_x_offset} 0 ${laser_z_offset}" rpy="0 0 0"/>
+    <child link="hokuyo"/>
     <parent link="chassis"/>
     <axis xyz="0 1 0" rpy="0 0 0"/>
     <limit effort="10000" velocity="1000"/>
     <joint_properties damping="1.0" friction="1.0"/>
   </joint>
-
-
-
-
 
 </robot>
