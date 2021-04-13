@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 Copyright (c) 2015, Mark Silliman
@@ -26,7 +26,7 @@ from actionlib_msgs.msg import *
 from geometry_msgs.msg import Pose, Point, Quaternion
 from tf.transformations import *
 import numpy as np
-from sphere_space_navigation import SphereSpaceNavigation as SSN
+#from sphere_space_navigation import SphereSpaceNavigation as SSN
 class GoToPose():
     def __init__(self):
 
@@ -80,15 +80,15 @@ if __name__ == '__main__':
     try:
         rospy.init_node('nav_test', anonymous=False)
         navigator = GoToPose()
-
+        idx = 0
         sphere_space_coordinate_li = [(1,0),(1,0)]
         while idx < len(sphere_space_coordinate_li) :
             xyuv_li = sphere_space_coordinate_li[idx]
             xy, uv = xyuv_li
-            yaw = np.arctan2(uv[1], uv[0])
+            yaw = 0 #np.arctan2(uv[1], uv[0])
             quaternion = quaternion_from_euler(0, 0, yaw)
             # Customize the following values so they are appropriate for your location
-            position = {'x': xy[0], 'y' : xy[1]}
+            position = {'x': xyuv_li[0], 'y' : xyuv_li[1]}
 
             rospy.loginfo("Go to (%s, %s) pose %s", position['x'], position['y'],quaternion)
             success = navigator.goto(position, quaternion)
